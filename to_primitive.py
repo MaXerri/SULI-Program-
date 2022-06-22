@@ -1,4 +1,5 @@
 #!/bin/bash
+#mario Xerri 6/15/22
 
 import pandas as pd
 import numpy as np 
