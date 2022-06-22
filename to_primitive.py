@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/python 
 #mario Xerri 6/15/22
 
 import pandas as pd
