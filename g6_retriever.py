@@ -187,14 +187,23 @@ def find_outliers():
 	df_outlier_final = (pd.concat([df_outlier,df_cell_param.iloc[:,0:7]],axis = 1,join = "inner")).iloc[:,3:]
 #	print(df_outlier_final)
 
-def outputting_df():
-	""" Outputs a dataframe showing a b c alpha beta gamma, original niggli reduced g6 vectors and 
-	the recovered g6 vectors 
-	"""
-	global df_output 
-	df_output = pd.concat([df_cell_param,df_g6redprim.iloc[:,0:6],df_dc7,df_tau,df_g6_reco["case"],df_g6_reco.iloc[:,10:13]],axis = 1) 
 
-	df_output.to_csv("/home/mxerri/SULI/cellParamsG6RecoveryCompleted.csv",index = False)
+def outputting_df():
+        """ Outputs a dataframe showing a b c alpha beta gamma, original niggli reduced g6 vectors and
+        the recovered g6 vectors
+        """
+        global df_output
+        df_output = pd.concat([df_trimmed.iloc[:,1], df_cell_param.iloc[:,6],df_cell_param.iloc[:,0:6],df_g6redprim.iloc[:,0:6],df_dc7**2, \
+        df_g6_reco.iloc[:,3:6],df_g6_reco.iloc[:,10:13]],join = "inner",axis = 1)
+
+        df_output.loc[(df_g6redprim["u"].round(6)== df_g6_reco["u"].round(6))&(df_g6redprim["v"].round(6)== df_g6_reco["v"].round(6))& \
+        (df_g6redprim["w"].round(6)==df_g6_reco["w"].round(6)),"agreement"] = "agree"
+
+        df_output.loc[(df_g6redprim["u"].round(6)!= df_g6_reco["u"].round(6))|(df_g6redprim["v"].round(6)!= df_g6_reco["v"].round(6))| \
+        (df_g6redprim["w"].round(6)!=df_g6_reco["w"].round(6)),"agreement"] = "disagree"
+
+        print(df_output)
+        df_output.to_csv("/home/mxerri/SULI/cellParamsG6RecoveryCompletedAndFormatted.csv",index = False)
 
 
 #function/method calls
@@ -202,3 +211,7 @@ def outputting_df():
 g6_to_dc7()
 find_outliers()
 outputting_df()
+
+
+
+
