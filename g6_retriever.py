@@ -1,6 +1,10 @@
 #! /usr/bin/python 
 #mario xerri 6/11/22
 
+#Converts cell parameters to reduced primite g6 representation, converts to dc7unsrt and inverts back to g6 whiel recovering the correct sign 
+#of the dc7unsrt uvw components. This outouts a dataframe showing all of the steps and for the X-ray diffraction data of the early June entries
+# in the PDB. Also outouts cells which did not invert correctly.   
+
 from sys import exit
 import os
 import pandas as pd
@@ -24,19 +28,24 @@ df_trimmed["c"] = df_trimmed["c"].astype(float)
 df_trimmed["alpha"] = df_trimmed["alpha"].astype(float)
 df_trimmed["beta"] = df_trimmed["beta"].astype(float)
 df_trimmed["gamma"] = df_trimmed["gamma"].astype(float)
-df_trimmed["spg_concat"] = (df_trimmed["spg1"] + " " + df_trimmed["spg2"] + " " + df_trimmed["spg3"] + " "  + df_trimmed["spg4"]).str.rstrip(" x x")
-df_trimmed["z"] = df_trimmed["spg_concat"].str.split(" ").str[-1]
-df_trimmed["spg_concat"] = df_trimmed.apply(lambda row:row["spg_concat"].rstrip(row["z"]),axis = 1)
+df_trimmed["spg"] = (df_trimmed["spg1"] + " " + df_trimmed["spg2"] + " " + df_trimmed["spg3"] + " "  + df_trimmed["spg4"]).str.rstrip(" x x")
+df_trimmed["z"] = df_trimmed["spg"].str.split(" ").str[-1]
+df_trimmed["spg"] = df_trimmed.apply(lambda row:row["spg"].rstrip(row["z"]),axis = 1)
 
-df_cell_param =  df_trimmed.iloc[:,[3,4,5,6,7,8,9,15,16]]
+df_cell_param =  df_trimmed.iloc[0:20,[3,4,5,6,7,8,9,15,16]]
 
 #global dataframes
 df_reduced = pd.DataFrame()
 df_reduced_vectors = pd.DataFrame()
+df_cell_param_redprim = pd.DataFrame()
 df_g6 = pd.DataFrame()
+df_dc7 = pd.DataFrame()
+df_g6_reco = pd.DataFrame()
 df_tau = pd.DataFrame()
+df_outlier = pd.DataFrame()
 df_output = pd.DataFrame()
-df_g6redprim = pd.DataFrame(columns = ["r","s","t","u","v","w","spg_type","spg_concat","z"])
+df_output_filtered = pd.DataFrame()
+df_g6redprim = pd.DataFrame(columns = ["r","s","t","u","v","w","spg_type","spg","z"])
 
 def toPrimitive(cell):
 	""" This converts the non-primitive cells and primitive cells to niggli reduced primitive G6 representation 
@@ -55,8 +64,8 @@ def toPrimitive(cell):
 
 #Calls the toPrimitive Function for every row and determines the G6 reduced preimitive representations
 df_g6redprim =  df_cell_param.apply(lambda row: pd.Series(toPrimitive([row["spg_type"],row["a"],row["b"],row["c"],row["alpha"],row["beta"],row["gamma"]])\
-+["P*",row["spg_concat"],row["z"]],index = df_g6redprim.columns) if row["spg_type"]!= "P" else pd.Series(toPrimitive([row["spg_type"],row["a"],row["b"],row["c"],row["alpha"],\
-row["beta"],row["gamma"]])+["P",row["spg_concat"],row["z"]],index = df_g6redprim.columns),axis = 1)
++["P*",row["spg"],row["z"]],index = df_g6redprim.columns) if row["spg_type"]!= "P" else pd.Series(toPrimitive([row["spg_type"],row["a"],row["b"],row["c"],row["alpha"],\
+row["beta"],row["gamma"]])+["P",row["spg"],row["z"]],index = df_g6redprim.columns),axis = 1)
 
 
 def square(i):
@@ -111,7 +120,19 @@ def niggli_reduction():
 
 	g6_to_dc7()
 
-df_dc7 = pd.DataFrame()
+def cell_param_redprim(): 
+	""" Makes  the dataframe of reduced primitive cell parameters
+	"""
+	global df_cell_param_redprim
+
+	df_cell_param_redprim["aprim"] = df_g6redprim["r"]**(.5) 
+	df_cell_param_redprim["bprim"] = df_g6redprim["s"]**(.5)
+	df_cell_param_redprim["cprim"] = df_g6redprim["t"]**(.5)
+	df_cell_param_redprim["alphaprim"] = np.arccos(df_g6redprim["u"] / (2*df_cell_param_redprim["bprim"] * df_cell_param_redprim["cprim"]))*(180/np.pi) 
+	df_cell_param_redprim["betaprim"] = np.arccos(df_g6redprim["v"] / (2*df_cell_param_redprim["aprim"] * df_cell_param_redprim["cprim"]))*(180/np.pi)
+	df_cell_param_redprim["gammaprim"] = np.arccos(df_g6redprim["w"] / (2*df_cell_param_redprim["aprim"] * df_cell_param_redprim["bprim"]))*(180/np.pi)
+
+
 
 def g6_to_dc7():
 	"""converts g6 parameters to dc7unsrt parameters for +++ case
@@ -131,14 +152,16 @@ def g6_to_dc7():
 	row["r"] + row["s"]+row["t"] + row["u"] - row["v"] - row["w"],row["r"] + row["s"]+row["t"] - row["u"] + row["v"] - row["w"], \
 	row["r"] + row["s"]+row["t"] - row["u"] - row["v"] + row["w"]),axis = 1)**(.5)
 
+	cell_param_redprim()
 	recover_uvw(df_dc7)
 
 
-df_g6_reco = pd.DataFrame()
 def recover_uvw(df_dc7):
 	""" Recovers g6 uvw parameters from dc7unsrt
 	Preconditions dataframe that contains dc7unsrt data
 	"""
+	assert  isinstance(df_dc7,pd.DataFrame)
+
 	global df_g6_reco
 	global df_tau
 	df_g6_reco["u_reco"] = (df_dc7["dc7_2"]**2+df_dc7["dc7_3"]**2-df_dc7["dc7_4"]**2).round(6) 
@@ -160,7 +183,7 @@ def recover_uvw(df_dc7):
 
 	df_tau = tau
 	df_tau.columns = ["tau"]
-	print(pd.concat([df_dc7["dc7_7"]**2,df_tau],axis = 1))
+#	print(pd.concat([df_dc7["dc7_7"]**2,df_tau],axis = 1))
 
 	#checks to see if tau equals  7th element of dcunsrt and determines sign of u,v,w  for g6 
 	df_g6_reco.loc[tau == (df_dc7["dc7_7"]**2).round(6), "case"] = "---"
@@ -175,7 +198,6 @@ def recover_uvw(df_dc7):
 
 #	print(df_g6_reco)
 
-df_outlier = pd.DataFrame()
 
 def find_outliers():
 	""" Looks thorugh dataset to find cases where  u,v,w were recoverred incorrectly
@@ -183,35 +205,46 @@ def find_outliers():
 	df_outlier =  df_g6_reco[(df_g6redprim["u"].round(6)!=df_g6_reco["u"].round(6))|(df_g6redprim["v"].round(6)!=df_g6_reco["v"].round(6))| \
 	(df_g6redprim["w"].round(6)!=df_g6_reco["w"].round(6))]
 
-
 	df_outlier_final = (pd.concat([df_outlier,df_cell_param.iloc[:,0:7]],axis = 1,join = "inner")).iloc[:,3:]
-#	print(df_outlier_final)
-
+	print(df_outlier_final)
 
 def outputting_df():
-        """ Outputs a dataframe showing a b c alpha beta gamma, original niggli reduced g6 vectors and
-        the recovered g6 vectors
-        """
-        global df_output
-        df_output = pd.concat([df_trimmed.iloc[:,1], df_cell_param.iloc[:,6],df_cell_param.iloc[:,0:6],df_g6redprim.iloc[:,0:6],df_dc7**2, \
-        df_g6_reco.iloc[:,3:6],df_g6_reco.iloc[:,10:13]],join = "inner",axis = 1)
+	""" Outputs a dataframe showing a b c alpha beta gamma, original niggli reduced g6 vectors and 
+	the recovered g6 vectors 
+	"""
+	global df_output 
+	df_output = pd.concat([df_trimmed.iloc[:,1], df_cell_param.iloc[:,6],df_cell_param.iloc[:,7],df_cell_param.iloc[:,0:6],\
+	df_cell_param_redprim,df_g6redprim.iloc[:,0:6],	df_dc7**2, df_g6_reco.iloc[:,3:6],df_g6_reco.iloc[:,10:13]],join = "inner",axis = 1) 
 
-        df_output.loc[(df_g6redprim["u"].round(6)== df_g6_reco["u"].round(6))&(df_g6redprim["v"].round(6)== df_g6_reco["v"].round(6))& \
-        (df_g6redprim["w"].round(6)==df_g6_reco["w"].round(6)),"agreement"] = "agree"
+	df_output.loc[(df_g6redprim["u"].round(6)== df_g6_reco["u"].round(6))&(df_g6redprim["v"].round(6)== df_g6_reco["v"].round(6))&\
+	(df_g6redprim["w"].round(6)==df_g6_reco["w"].round(6)),"agreement"] = "agree" 
 
-        df_output.loc[(df_g6redprim["u"].round(6)!= df_g6_reco["u"].round(6))|(df_g6redprim["v"].round(6)!= df_g6_reco["v"].round(6))| \
-        (df_g6redprim["w"].round(6)!=df_g6_reco["w"].round(6)),"agreement"] = "disagree"
+	df_output.loc[(df_g6redprim["u"].round(6)!= df_g6_reco["u"].round(6))|(df_g6redprim["v"].round(6)!= df_g6_reco["v"].round(6))| \
+	(df_g6redprim["w"].round(6)!=df_g6_reco["w"].round(6)),"agreement"] = "disagree" 
 
-        print(df_output)
-        df_output.to_csv("/home/mxerri/SULI/cellParamsG6RecoveryCompletedAndFormatted.csv",index = False)
+	df_output.columns = ["idcode","spg_type","spg","a","b","c","alpha","beta","gamma","aprim","bprim","cprim","alphaprim","betaprim", \
+	"gammaprim","r","s","t","u","v","w","dc7_1","dc7_2","dc7_3","dc7_4","dc7_5","dc7_6","dc7_7","r_rec","s_rec","t_rec","u_rec", \
+	"v_rec","w_rec","agreement"]
+
+#	df_output.to_csv("/home/mxerri/SULI/cellParamsG6RecoveryCompletedAndFormatted.csv",index = False) # write path to desired location
 
 
-#function/method calls
+def filter_non_xray():
+	""" 1 1 1 90 90 90 cells are not x-ray crystallograohic structures so they will be ignored using this function
+	"""
+	global df_output
+	global df_output_filtered
+
+	df_output_filtered = df_output[~((df_output["a"] == 1) & (df_output["b"] == 1) & (df_output["c"] == 1) & (df_output["alpha"] == 90) & \
+	(df_output["beta"] == 90) & (df_output["gamma"] == 90))]
+
+#	print(df_output_filtered)
+#	df_output_filtered.to_csv("/home/mxerri/SULI/RecoveryOnlyXRayJune24.csv",index = False) # write path to desired location
+
+
+#function/method calls 
 
 g6_to_dc7()
 find_outliers()
 outputting_df()
-
-
-
-
+filter_non_xray()
