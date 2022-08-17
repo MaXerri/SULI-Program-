@@ -5,10 +5,23 @@ xmario0@yahoo.com
 
 The research perfromed use the Wigner Seitz representation of the unit to define a 7- dimesnion representation of the cell which includes teh 3 edge lengths, 3 shortest face diagonals and the shortest body diagonals.  Starting from a Niglgi reduced cell in its G6 representation (Andrews and Bernstein, 1988), the Wigner Seitz cell can be constructed.
 
-These scripts convert text file lists of PDB cell parameter entries to their dc7unsrt representation and then recover the Niggli cell from dc7unsrt.  Recovered Nigli-cells are compared to thier original to ensure consistency and each step of the conversion process in shown in an outputted excel spreadsheet. To learn more about the functionality of the ncdist repository look at th README.txt after you download the ncdist package (steps for this are shown below). 
+These scripts convert text file lists of PDB cell parameter entries to their dc7unsrt representation and then recover the Niggli cell from dc7unsrt.  Recovered Nigli-cells are compared to thier original to ensure consistency and each step of the conversion process in shown in an outputted excel spreadsheet. To learn more about the functionality of the ncdist repository look at th README.txt after you download the ncdist package (steps for this are shown below). These scripts use functions from the ncdist repository so it must be downloaded before running converter_main.cpp which has the main function for these scripts.  
 
-######################################################################################3
+######################################################################################
+ADDING NEW FILES TO READ
 
+In the main_converter.cpp code, to read a new textfile with cell parameters, change crystal,txt to the name of the file you are going to read in the scipt and make sure itis formatted in the same way as crystal.txt is (this file can be found in within this current directory).  
+
+#########################################################################################
+RUNNIGN THE SCRIPTS
+
+From the build directory run the following commands:
+cmake .
+make 
+./main_executable
+
+The output csv files will be in the build directory after running the script 
+##############################################################################################
 
 INSTALLATION
 
