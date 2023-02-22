@@ -1,7 +1,7 @@
 dc7unsrt conversions for the ncdist repository 
 This additional code was made by Mario A. Xerri for Herbert J Bernstein and Lawrence C. Andrews's ncdist repository
 August 2022 
-xmario0@yahoo.com 
+xmario02@yahoo.com 
 
 The research perfromed use the Wigner Seitz representation of the unit to define a 7- dimesnion representation of the cell which includes teh 3 edge lengths, 3 shortest face diagonals and the shortest body diagonals.  Starting from a Niglgi reduced cell in its G6 representation (Andrews and Bernstein, 1988), the Wigner Seitz cell can be constructed.
 
