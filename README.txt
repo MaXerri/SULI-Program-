@@ -1,7 +1,7 @@
 Code from Crystallography projects during my Science Undergraduate Labratory Internship program (Summer 2022).
 I initially coded this coversion process in python and then remade the code in C++ while learning the language.  The compiled c++ code ran significantly faster than my original python code. The C++ scipts were the final product of the programalong with my final presentation and report which can be found on my linkden. The C++ code can be found in the folder dc7unsrt_c++_conversions and the original python scripts are in this curent directory.
 
-__________________________________________________________________________________
+__________________________________________________________________________________________________________________________________________________________________
 
 dc7unsrt conversions for the ncdist repository 
 This additional code was made by Mario A. Xerri for Herbert J Bernstein and Lawrence C. Andrews's ncdist repository
