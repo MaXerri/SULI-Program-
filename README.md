@@ -1,10 +1,7 @@
 # Code from Crystallography projects during my Science Undergraduate Labratory Internship program (Summer 2022).
 
-I initially coded the conversion process for convenentional unit cell representation to the dc7unsrt represetation in python and then remade the code in C++ while learning the language.  The compiled c++ code allowed for a fasterruntime than my original python code. The C++ scipts were the final product of the programalong with my final presentation and report which can be found on my linkden. The C++ code can be found in the src directory the original python scripts are in its own folder.  
 
-______________________________________________________________________________________
-
-dc7unsrt conversions for the ncdist repository 
+These are conversions to the dc7unsrt cell representation for the ncdist repository.
 This additional code was made by Mario A. Xerri for Herbert J Bernstein and Lawrence C. Andrews's ncdist repository
 August 2022 
 xmario02@yahoo.com 
@@ -13,6 +10,7 @@ The research perfromed use the Wigner Seitz representation of the unit to define
 
 These scripts convert text file lists of PDB cell parameter entries to their dc7unsrt representation and then recover the Niggli cell from dc7unsrt.  Recovered Nigli-cells are compared to thier original to ensure consistency and each step of the conversion process in shown in an outputted excel spreadsheet. To learn more about the functionality of the ncdist repository look at th README.txt after you download the ncdist package (steps for this are shown below). These scripts use functions from the ncdist repository so it must be downloaded before running converter_main.cpp which has the main function for these scripts.  
 
+I initially coded the conversion process for convenentional unit cell representation to the dc7unsrt represetation in python and then remade the code in C++ while learning the language.  The compiled c++ code allowed for a fasterruntime than my original python code. The C++ scipts were the final product of the programalong with my final presentation and report which can be found on my linkden. The C++ code can be found in the src directory the original python scripts are in its own folder.  
 _______________________________________________________________________________________
 
 ADDING NEW FILES TO READ
