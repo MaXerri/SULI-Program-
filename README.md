@@ -1,5 +1,6 @@
 # Code from Crystallography projects during my Science Undergraduate Labratory Internship program (Summer 2022).
-I initially coded this coversion process in python and then remade the code in C++ while learning the language.  The compiled c++ code ran significantly faster than my original python code. The C++ scipts were the final product of the programalong with my final presentation and report which can be found on my linkden. The C++ code can be found in the folder dc7unsrt_c++_conversions and the original python scripts are in this curent directory.
+
+I initially coded the conversion process for convenentional unit cell representation to the dc7unsrt represetation in python and then remade the code in C++ while learning the language.  The compiled c++ code allowed for a fasterruntime than my original python code. The C++ scipts were the final product of the programalong with my final presentation and report which can be found on my linkden. The C++ code can be found in the src directory the original python scripts are in its own folder.  
 
 ______________________________________________________________________________________
 
